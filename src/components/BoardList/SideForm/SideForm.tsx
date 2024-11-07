@@ -1,60 +1,27 @@
-import React, { ChangeEvent, FC, useRef, useState } from 'react';
+import { FC } from 'react';
+import * as styles from './SideForm.css';
 import { FiCheck } from 'react-icons/fi';
-import { icon, input, sideForm } from './SideForm.css';
-import { useTypedDispatch } from '../../../hooks/redux';
-import { addBoard } from '../../../store/slices/boardSlice';
-import { board } from '../../../App.css';
-import { addLog } from '../../../store/slices/loggerSlice';
-import { v4 as uuidv4 } from 'uuid';
+import { useSideForm } from '../../../hooks/useSideForm';
 
-type TsideFormProps = {
-  inputRef: React.RefObject<HTMLInputElement>;
-  setIsFormOpen: React.Dispatch<React.SetStateAction<boolean>>;
+type TSideFormProps = {
+  onClose: () => void;
 };
 
-const SideForm: FC<TsideFormProps> = ({ setIsFormOpen, inputRef }) => {
-  const [inputText, setInputText] = useState('');
-  const dispatch = useTypedDispatch();
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setInputText(e.target.value);
-  };
-
-  const handleOnBlur = () => {
-    setIsFormOpen(false);
-  };
-  const handleClick = () => {
-    if (inputText) {
-      dispatch(
-        addBoard({
-          board: { boardId: uuidv4(), boardName: inputText, lists: [] },
-        })
-      );
-
-      dispatch(
-        addLog({
-          logId: uuidv4(),
-          logMessage: `게시판 등록: ${inputText}`,
-          logAuthor: 'User',
-          logTimestamp: String(Date.now()),
-        })
-      );
-    }
-  };
+const SideForm: FC<TSideFormProps> = ({ onClose }) => {
+  const { inputText, handleChange, handleSubmit } = useSideForm(onClose);
 
   return (
-    <div className={sideForm}>
+    <div className={styles.sideForm}>
       <input
-        // ref={inputRef}
         autoFocus
-        className={input}
-        type='text'
-        placeholder='새로운 게시판 등록하기'
+        className={styles.input}
+        placeholder='새로운 게시판 등록'
         value={inputText}
         onChange={handleChange}
-        onBlur={handleOnBlur}
       />
-      <FiCheck className={icon} onMouseDown={handleClick} />
+      <button onClick={handleSubmit}>
+        <FiCheck className={styles.icon} />
+      </button>
     </div>
   );
 };

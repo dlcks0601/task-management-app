@@ -1,7 +1,7 @@
 import { style } from '@vanilla-extract/css';
-import { vars } from '../../App.css';
+import { vars } from '../../styles/globalStyle.css';
 
-export const listsContainer = style({
+export const listContainer = style({
   height: 'max-content',
   display: 'flex',
   flexWrap: 'wrap',

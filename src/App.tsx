@@ -1,30 +1,44 @@
-import { useState } from 'react';
-import { appContainer, buttons, board } from './App.css';
+import * as style from './App.css';
 import BoardList from './components/BoardList/BoardList';
-import ListsContainer from './components/ListContainer/ListContainer';
-import { useTypedSelector } from './hooks/redux';
+import ListContainer from './components/ListContainer/ListContainer';
+import ModalEdit from './components/ModalEdit/ModalEdit';
+import LoggerModal from './components/LoggerModal/LoggerModal';
+import { DragDropContext } from 'react-beautiful-dnd';
+import { useApp } from './hooks/useApp';
+import { useState } from 'react';
 
 function App() {
-  const [activeBoaidId, setActiveBoaidId] = useState('board-0');
+  const [activeBoardId, setActiveBoardId] = useState('board-0');
+  const {
+    lists,
+    modalActive,
+    isLoggerOpen,
+    handleDragEnd,
+    handleDeleteBoard,
+    handleToggle,
+    handleLoggerModalClose,
+  } = useApp(activeBoardId, setActiveBoardId);
 
-  const boards = useTypedSelector((state) => state.boards.boardArray);
-  const getActiveBoard = boards.filter(
-    (board) => board.boardId === activeBoaidId
-  )[0];
-  const lists = getActiveBoard.lists;
   return (
-    <div className={appContainer}>
+    <div className={style.appContainer}>
+      {modalActive && <ModalEdit />}
+      {isLoggerOpen && <LoggerModal onClose={handleLoggerModalClose} />}
       <BoardList
-        activeBoardId={activeBoaidId}
-        setActiveBoardId={setActiveBoaidId}
+        activeBoardId={activeBoardId}
+        onSetActiveBoardId={setActiveBoardId}
       />
-      <div className={board}>
-        <ListsContainer lists={lists} boardId={getActiveBoard.boardId} />
+      <div className={style.board}>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <ListContainer list={lists} boardId={activeBoardId} />
+        </DragDropContext>
       </div>
-
-      <div className={buttons}>
-        <button>이 게시판 삭제하기</button>
-        <button></button>
+      <div className={style.buttons}>
+        <button className={style.deleteBoardButton} onClick={handleDeleteBoard}>
+          이 게시판 삭제
+        </button>
+        <button className={style.loggerButton} onClick={handleToggle}>
+          {isLoggerOpen ? '활동 목록 숨기기' : '활동 목록 보기'}
+        </button>
       </div>
     </div>
   );

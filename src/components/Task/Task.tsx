@@ -1,26 +1,32 @@
 import { FC } from 'react';
-import { container, description, title } from './Task.css';
+import { ITask } from '../../types';
+import * as styles from './Task.css';
+import { Draggable } from 'react-beautiful-dnd';
 
-type TTaskProps = {
-  index: number;
-  id: string;
-  boardId: string;
-  taskName: string;
-  taskDescription: string;
+type tTaskProps = {
+  task: ITask;
+  taskIndex: number;
+  onClick?: (task: ITask) => void;
 };
 
-const Task: FC<TTaskProps> = ({
-  index,
-  id,
-  boardId,
-  taskName,
-  taskDescription,
-}) => {
+const Task: FC<tTaskProps> = ({ task, taskIndex, onClick }) => {
   return (
-    <div className={container}>
-      <div className={title}>{taskName}</div>
-      <div className={description}>{taskDescription}</div>
-    </div>
+    <Draggable draggableId={task.taskId} index={taskIndex}>
+      {(provided) => (
+        <div
+          className={styles.container}
+          ref={provided.innerRef}
+          {...provided.dragHandleProps}
+          {...provided.draggableProps}
+          onClick={() => onClick?.(task)}
+        >
+          <div className={styles.title}>{task.taskName}</div>
+          {task.taskDescription && (
+            <div className={styles.desc}>{task.taskDescription}</div>
+          )}
+        </div>
+      )}
+    </Draggable>
   );
 };
 

@@ -1,65 +1,64 @@
-import React, { FC, useRef, useState } from 'react';
-import { useTypedSelector } from '../../hooks/redux';
+import { FC } from 'react';
+import { useAuth } from '../../hooks/redux';
 import SideForm from './SideForm/SideForm';
-import { FiPlusCircle } from 'react-icons/fi';
-import {
-  addButton,
-  addSection,
-  boardItem,
-  boardItemActive,
-  container,
-  title,
-} from './BoardList.css';
+import { FiLogIn, FiPlusCircle } from 'react-icons/fi';
+import { GoSignOut } from 'react-icons/go';
+import * as styles from './BoardList.css';
 import clsx from 'clsx';
+import { IBoard } from '../../types';
+import { useBoardList } from '../../hooks/useBoardList';
 
 type TBoardListProps = {
   activeBoardId: string;
-  setActiveBoardId: React.Dispatch<React.SetStateAction<string>>;
+  onSetActiveBoardId: (value: string) => void;
 };
 
 const BoardList: FC<TBoardListProps> = ({
   activeBoardId,
-  setActiveBoardId,
+  onSetActiveBoardId,
 }) => {
-  const { boardArray } = useTypedSelector((state) => state.boards);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const isLoggedIn = useAuth();
+  const {
+    boardArray,
+    isActiveBoard,
+    isFormOpen,
+    handleOpen,
+    handleClose,
+    handleSetBoardId,
+    handleLogin,
+    handleLogout,
+  } = useBoardList(activeBoardId, onSetActiveBoardId);
 
-  const handleClick = () => {
-    setIsFormOpen(!isFormOpen);
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0);
+  const BoardItem = ({ board, index }: { board: IBoard; index: number }) => {
+    return (
+      <div
+        onClick={() => handleSetBoardId(board.boardId)}
+        className={clsx({
+          [styles.boardItemActive]: isActiveBoard(index),
+          [styles.boardItem]: !isActiveBoard(index),
+        })}
+      >
+        <div>{board.boardName}</div>
+      </div>
+    );
   };
 
   return (
-    <div className={container}>
-      <div className={title}>게시판:</div>
+    <div className={styles.container}>
+      <div className={styles.title}>게시판: </div>
       {boardArray.map((board, index) => (
-        <div
-          key={board.boardId}
-          onClick={() => setActiveBoardId(boardArray[index].boardId)}
-          className={clsx(
-            {
-              [boardItemActive]:
-                boardArray.findIndex((b) => b.boardId === activeBoardId) ===
-                index,
-            },
-            {
-              [boardItem]:
-                boardArray.findIndex((b) => b.boardId === activeBoardId) !==
-                index,
-            }
-          )}
-        >
-          {board.boardName}
-        </div>
+        <BoardItem key={board.boardId} board={board} index={index} />
       ))}
-      <div className={addSection}>
+      <div className={styles.addSection}>
         {isFormOpen ? (
-          <SideForm inputRef={inputRef} setIsFormOpen={setIsFormOpen} />
+          <SideForm onClose={handleClose} />
         ) : (
-          <FiPlusCircle className={addButton} onClick={handleClick} />
+          <FiPlusCircle className={styles.addButton} onClick={handleOpen} />
+        )}
+        {isLoggedIn ? (
+          <GoSignOut className={styles.addButton} onClick={handleLogout} />
+        ) : (
+          <FiLogIn className={styles.addButton} onClick={handleLogin} />
         )}
       </div>
     </div>

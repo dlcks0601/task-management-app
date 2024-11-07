@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { vars } from '../../../App.css';
+import { vars } from '../../../styles/globalStyle.css';
 
 export const sideForm = style({
   display: 'flex',
@@ -8,13 +8,16 @@ export const sideForm = style({
 });
 
 export const input = style({
-  padding: vars.spacing.small,
-  fontSize: vars.fontSizing.T4,
+  padding: `0 ${vars.spacing.small}`,
+  fontSize: vars.fontSize.T4,
   minHeight: 30,
+  outline: 'none',
+  border: 0,
 });
+
 export const icon = style({
-  color: vars.color.brightText,
-  fontSize: vars.fontSizing.T2,
+  color: vars.color.text.primary.bright,
+  fontSize: vars.fontSize.T2,
   marginLeft: vars.spacing.medium,
   cursor: 'pointer',
   ':hover': {

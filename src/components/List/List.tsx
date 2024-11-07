@@ -1,70 +1,70 @@
-import React, { FC } from 'react';
-import { GrSubtract } from 'react-icons/gr';
-import { v4 } from 'uuid';
-import { useTypedDispatch } from '../../hooks/redux';
-import { deleteList, setModalActive } from '../../store/slices/boardSlice';
-import { addLog } from '../../store/slices/loggerSlice';
-import { setModalData } from '../../store/slices/modalSlice';
+import { FC } from 'react';
 import { IList, ITask } from '../../types';
-import ActionButton from '../ActionButton/ActionButton';
+import { GrSubtract } from 'react-icons/gr';
 import Task from '../Task/Task';
-import { deleteButton, header, listWrapper, name } from './List.css';
+import { useTypedDispatch } from '../../hooks/redux';
+import { deleteList, setModalActive } from '../../store/slices/boardsSlice';
+import { addLog } from '../../store/slices/loggerSlice';
+import { v4 } from 'uuid';
+import { setModalData } from '../../store/slices/modalSlice';
+import * as styles from './List.css';
+import ActionButton from '../ActionButton/ActionButton';
+import { Droppable } from 'react-beautiful-dnd';
 
 type TListProps = {
-  boardId: string;
   list: IList;
+  boardId: string;
 };
+
 const List: FC<TListProps> = ({ list, boardId }) => {
   const dispatch = useTypedDispatch();
-  const handleListDelete = (listId: string) => {
+  const listId = list.listId;
+
+  const handleListDelete = () => {
     dispatch(deleteList({ boardId, listId }));
     dispatch(
       addLog({
         logId: v4(),
-        logMessage: `리스트 삭제하기: ${list.listName}`,
+        logMessage: `리스트 삭제: ${list.listName}`,
         logAuthor: 'User',
         logTimestamp: String(Date.now()),
       })
     );
   };
 
-  const handleTaskChange = (
-    boardId: string,
-    listId: string,
-    taskId: string,
-    task: ITask
-  ) => {
-    dispatch(setModalData({ boardId, listId, task }));
+  const handleTaskChange = (task: ITask) => {
+    dispatch(setModalData({ task, listId, boardId }));
     dispatch(setModalActive(true));
   };
-  return (
-    <div className={listWrapper}>
-      <div className={header}>
-        <div className={name}>{list.listName}</div>
-        <GrSubtract
-          className={deleteButton}
-          onClick={() => handleListDelete(list.listId)}
-        />
-      </div>
-      {list.tasks.map((task, index) => (
-        <div
-          onClick={() =>
-            handleTaskChange(boardId, list.listId, task.taskId, task)
-          }
-          key={task.taskId}
-        >
-          <Task
-            taskName={task.taskName}
-            taskDescription={task.taskDescription}
-            boardId={boardId}
-            id={task.taskId}
-            index={index}
-          />
-        </div>
-      ))}
 
-      <ActionButton boardId={boardId} listId={list.listId} />
-    </div>
+  return (
+    <Droppable droppableId={list.listId}>
+      {(provided) => (
+        <div
+          className={styles.listWrapper}
+          {...provided.droppableProps}
+          ref={provided.innerRef}
+        >
+          <div className={styles.header}>
+            <div className={styles.name}>{list.listName}</div>
+            <GrSubtract
+              className={styles.deleteButton}
+              onClick={handleListDelete}
+            />
+          </div>
+          {list.tasks.map((task, index) => (
+            <Task
+              key={task.taskId}
+              task={task}
+              taskIndex={index}
+              onClick={() => handleTaskChange(task)}
+            />
+          ))}
+          {provided.placeholder}
+          <ActionButton boardId={boardId} listId={listId} />
+        </div>
+      )}
+    </Droppable>
   );
 };
 
